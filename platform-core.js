@@ -533,6 +533,23 @@
     return readJSON(STORAGE_KEYS.complaints, []);
   }
 
+  function saveReports(reports) {
+    writeJSON(STORAGE_KEYS.complaints, reports);
+  }
+
+  function updateReportStatus(reportId, newStatus, actor) {
+    var reports = getReports();
+    var report = reports.find(function (r) { return r.id === reportId; });
+    if (report) {
+      report.status = newStatus;
+      report.updatedAt = nowIso();
+      saveReports(reports);
+      logActivity("report_status_updated", "Status updated to " + newStatus, { reportId: reportId, status: newStatus }, actor && actor.id);
+      return true;
+    }
+    return false;
+  }
+
   function getAuditLog() {
     return getPlatformState().auditLog;
   }
@@ -1289,6 +1306,8 @@
     getAdminAccounts: getAdminAccounts,
     getCitizens: getCitizens,
     getReports: getReports,
+    saveReports: saveReports,
+    updateReportStatus: updateReportStatus,
     getAuditLog: getAuditLog,
     logActivity: logActivity,
     getCurrentAdmin: getCurrentAdmin,
