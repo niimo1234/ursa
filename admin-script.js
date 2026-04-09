@@ -940,7 +940,12 @@
             td(report.category || "-") +
             td(report.description || "-") +
             td(report.location || "-") +
-            td(getStatusLabel(report.status)) +
+            "<td>" +
+              '<select class="action-btn status-select" data-action="update-report-status" data-report-id="' + escapeHtml(report.id) + '" style="background: rgba(77, 255, 158, 0.1); border: 1px solid rgba(77, 255, 158, 0.2); color: var(--text-primary); cursor: pointer; outline: none;">' +
+                '<option value="pending"' + (report.status === "pending" ? " selected" : "") + ">" + escapeHtml(t("status_pending")) + "</option>" +
+                '<option value="approved"' + (report.status === "approved" ? " selected" : "") + ">" + escapeHtml(t("status_approved")) + "</option>" +
+              "</select>" +
+            "</td>" +
             td(formatDate(report.createdAt || report.date)) +
             "<td>" + renderAttachmentActions(report.attachments) + "</td>" +
           "</tr>"
@@ -1378,6 +1383,23 @@
     }
   }
 
+  function handleStatusChange(event) {
+    var select = event.target.closest("[data-action='update-report-status']");
+    if (!select) {
+      return;
+    }
+
+    var admin = platform.getCurrentAdmin();
+    var reportId = select.getAttribute("data-report-id");
+    var newStatus = select.value;
+
+    if (platform.updateReportStatus(reportId, newStatus, admin)) {
+      renderReportsPage(admin);
+    } else {
+      alert("Failed to update status.");
+    }
+  }
+
   function bindAdminLayoutEvents() {
     document.getElementById("openSidebar") && document.getElementById("openSidebar").addEventListener("click", openSidebar);
     document.getElementById("closeSidebar") && document.getElementById("closeSidebar").addEventListener("click", closeSidebar);
@@ -1387,6 +1409,7 @@
     document.getElementById("lightModeBtn") && document.getElementById("lightModeBtn").addEventListener("click", function () { applyTheme("light"); });
     document.getElementById("darkModeBtn") && document.getElementById("darkModeBtn").addEventListener("click", function () { applyTheme("dark"); });
     document.addEventListener("click", handleActionClick);
+    document.addEventListener("change", handleStatusChange);
   }
 
   document.addEventListener("DOMContentLoaded", function () {
